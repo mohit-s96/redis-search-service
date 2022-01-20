@@ -13,17 +13,19 @@ jobs:
         with:
           node-version: 14
       - name: Install dependencies
-      - run: yarn install --immutable --immutable-cache --check-cachenpm install yarn -g
+        run: yarn install --immutable --immutable-cache --check-cachenpm install yarn -g
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
-      - name: Build Application and Run unit Test
-      - run: yarn lint 
-      - run: yarn test
-      - run: tsc
+      - name: Run lint check
+        run: yarn lint 
+      - name: Run tests
+        run: yarn test
+      - name: Run typescript checks
+        run: tsc
 
   continuous-deployment:
     runs-on: ubuntu-latest
