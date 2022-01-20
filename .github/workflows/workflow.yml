@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 14
       - name: Install dependencies
-        run: yarn install --immutable --immutable-cache --check-cachenpm install yarn -g
+        run: yarn install --immutable --immutable-cache --check-cache
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
