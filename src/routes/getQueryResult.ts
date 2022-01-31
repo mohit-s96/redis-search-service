@@ -1,6 +1,6 @@
 import { Response, Request } from "express";
 import { client } from "..";
-import { fetchSearchQuery } from "../db";
+import { fetchSearchQuery } from "../db/db";
 export function transformRedisKey(key: string) {
   return key.split(" ").join("-");
 }

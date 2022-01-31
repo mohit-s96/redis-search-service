@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { BlogSlug } from "./types";
+import { BlogSlug } from "../types";
 
 type mongoCallback<T> = (client: MongoClient) => Promise<T>;
 
@@ -14,11 +14,27 @@ export function fetchSearchQuery(key: string) {
       const cursors = client
         .db()
         .collection(process.env.BLOG_COLLECTION as string)
-        .find(
-          { isArchived: false, $text: { $search: key } },
-          { projection: { title: 1, uri: 1, tags: 1, createdAt: 1 } }
-        );
-      const blogs = (await cursors.toArray()) as Array<Partial<BlogSlug>>;
+        .aggregate([
+          {
+            $search: {
+              autocomplete: {
+                path: "blogData",
+                query: key,
+              },
+            },
+          },
+          {
+            $project: {
+              title: 1,
+              uri: 1,
+              tags: 1,
+              createdAt: 1,
+              isArchived: 1,
+            },
+          },
+        ]);
+      let blogs = (await cursors.toArray()) as Array<Partial<BlogSlug>>;
+      blogs = blogs.filter((blog) => !blog.isArchived);
       return blogs;
     } catch (e) {
       console.error(e);

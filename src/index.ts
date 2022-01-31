@@ -9,9 +9,10 @@ import handleSearchQuery from "./routes/getQueryResult";
 const corsOptions = {
   methods: ["POST"],
   origin:
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:5000"
-      : "https://mohits.dev",
+    // process.env.NODE_ENV === "development"
+    // ?
+    "http://localhost:5000",
+  // : "https://mohits.dev",
 };
 
 export const client = createClient({
@@ -34,7 +35,7 @@ client.connect().then(async () => {
   });
   const app = express();
   app.use(limiter);
-  const port = 5000;
+  const port = 5001;
   app.use(cors(corsOptions));
 
   app.get("/", (req, res) => {
