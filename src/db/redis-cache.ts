@@ -1,4 +1,6 @@
-import { client } from "..";
+// import { client } from "..";
+
+import { client } from "../initializers/01-redis";
 
 export async function getFromCache<T>(
   key: string,

@@ -1,14 +1,16 @@
-import { Response, Request } from "express";
-import { client } from "..";
-import { fetchSearchQuery } from "../db/db";
+import { Request, Response } from "express";
+import { RedisClientType } from "redis";
+import { fetchSearchQuery } from "../../db/db";
+
 export function transformRedisKey(key: string) {
   return key.split(" ").join("-");
 }
 
-async function handleSearchQuery(req: Request, res: Response) {
-  //   await client.connect();
+export default async (req: Request, res: Response) => {
   try {
     const key = req.query.query as string;
+
+    const client: RedisClientType = req.app.locals.client;
 
     const cached = await client.get(transformRedisKey(key));
 
@@ -38,6 +40,4 @@ async function handleSearchQuery(req: Request, res: Response) {
 
     res.status(code).json({ statusCode: code, message });
   }
-}
-
-export default handleSearchQuery;
+};

@@ -40,3 +40,36 @@ export interface BlogSlug {
   lastEdited: number | null;
   isArchived: boolean;
 }
+
+export interface CommentSchema {
+  _id?: ObjectId;
+  blogId: string | ObjectId;
+  createdAt: number;
+  author: string;
+  authorGhId: number;
+  inReplyToUser: string;
+  isAdmin: boolean;
+  hasMarkdown: boolean;
+  isVisible: boolean;
+  isDeleted: boolean;
+  inReplyToComment: ObjectId | string;
+  body: string;
+  html: string;
+  hadIllegalHtml: boolean;
+  lastUpdated: number;
+  deletedAt: number;
+}
+
+export type UserSubmittedCommentSchema = Omit<
+  CommentSchema,
+  | "createdAt"
+  | "author"
+  | "authorGhId"
+  | "isAdmin"
+  | "isVisible"
+  | "isDeleted"
+  | "html"
+  | "hadIllegalHtml"
+  | "lastUpdated"
+  | "deletedAt"
+>;
