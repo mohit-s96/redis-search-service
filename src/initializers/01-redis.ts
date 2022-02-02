@@ -12,6 +12,5 @@ client.on("error", (err) => {
 await client.connect();
 
 export default function (app: ExpressApp) {
-  console.log();
   app.locals.client = client;
 }

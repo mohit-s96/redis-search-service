@@ -1,0 +1,43 @@
+import { Request, Response } from "express";
+import fetch from "node-fetch";
+
+export async function githubOauthFlow(req: Request, res: Response) {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      throw "invalid request";
+    }
+
+    const data = await fetch(
+      `https://github.com/login/oauth/access_token?client_id=Iv1.b7f0e9e6521133a2&client_secret=${process.env.GH_CLIENT_SECRET}&code=${code}`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const user = (await data.json()) as any;
+
+    (res as any).cookies.set("token", user.access_token, {
+      httpOnly: true,
+    });
+
+    (res as any).cookies.set("rfrt", user.refresh_token, {
+      httpOnly: true,
+      maxAge: user.refresh_token_expires_in * 1000,
+    });
+
+    res.status(200).json({ message: "success" });
+  } catch (err) {
+    console.log(err);
+
+    res.status(400).json({ error: "something went wrong" });
+  }
+}
+
+export async function userVerified(_req: Request, res: Response) {
+  res.status(200).json({ message: "success" });
+}
