@@ -1,23 +1,25 @@
 // import { client } from "..";
 
 import { client } from "../initializers/01-redis";
+import { CommentSchema, PatchComment } from "../types";
 
 export async function getFromCache<T>(
   key: string,
   fetcher: () => Promise<T>,
+  force: boolean = false,
   expiry: number = 3600 * 24 * 5
 ): Promise<T> {
-  const cached = await client.get(key);
+  const cached = await client.sMembers(key);
 
   let parsedcache: T;
 
-  if (cached === null) {
+  if (cached.length === 0 || force) {
     parsedcache = await fetcher();
 
-    await client.sAdd(key, JSON.stringify(parsedcache));
+    await client.sAdd(key, parsedcache as unknown as string[]);
     await client.expire(key, expiry);
   } else {
-    parsedcache = JSON.parse(cached);
+    parsedcache = cached as any as T;
   }
 
   return parsedcache;
@@ -25,31 +27,47 @@ export async function getFromCache<T>(
 
 export async function deleteFromCache(
   key: string,
-  data: Record<string, unknown>
+  commentId: string
 ): Promise<number> {
-  return client.sRem(key, JSON.stringify(data));
+  const comments = await client.sMembers(key);
+  const commentsFiltered = comments
+    .map((comment) => JSON.parse(comment) as CommentSchema)
+    .filter((comment) => comment._id !== commentId)
+    .map((x) => JSON.stringify(x));
+
+  return client.sAdd(key, commentsFiltered);
 }
 
 export async function setCache<T>(
   key: string,
-  fetcher: () => Promise<T>,
+  data: any,
   expiry: number = 3600 * 24 * 5
 ): Promise<void> {
-  const value = await fetcher();
-
-  await client.sAdd(key, JSON.stringify(value));
+  await client.sAdd(key, JSON.stringify(data));
 
   await client.expire(key, expiry);
 }
 
 export async function updateCache(
   key: string,
-  oldValue: Record<string, unknown>,
-  newValue: Record<string, unknown>
+  id: string,
+  data: PatchComment
 ): Promise<void> {
-  const status = await client.sRem(key, JSON.stringify(oldValue));
+  const oldComments = await client.sMembers(key);
 
-  if (status === 1) {
-    await client.sAdd(key, JSON.stringify(newValue));
-  }
+  const newComments = oldComments.map((comment) => {
+    let parsed = JSON.parse(comment) as CommentSchema;
+    if (parsed._id === id) {
+      parsed.body = data.body;
+      parsed.hadIllegalHtml = data.hadIllegalHtml;
+      (parsed.hasMarkdown = data.hasMarkdown),
+        (parsed.lastUpdated = data.lastUpdated),
+        (parsed.html = data.html);
+      return JSON.stringify(parsed);
+    } else {
+      return comment;
+    }
+  });
+
+  await client.sAdd(key, newComments);
 }

@@ -2,6 +2,7 @@ import Cookies from "cookies";
 import { NextFunction, Request, Response } from "express";
 import { createRateLimiter } from "../../utils/create-rate-limiter";
 import fetch from "node-fetch";
+import { GithubUser } from "../../types";
 
 const config = {
   max: 5,
@@ -9,8 +10,9 @@ const config = {
 };
 
 export function rateLimiter() {
+  const closure = { ...config };
   return (req: Request, res: Response, next: NextFunction) => {
-    createRateLimiter(req.app.locals.client, config.max, config.windowMs)(
+    createRateLimiter(req.app.locals.client, closure.max, closure.windowMs)(
       req,
       res,
       next
@@ -46,7 +48,7 @@ export async function verifyGithubTokenOrGetNewTokenFromRefreshToken(
       },
     });
 
-    const user = (await userdata.json()) as any;
+    const user = (await userdata.json()) as GithubUser & { message: string };
 
     if (user.message === "Bad credentials") {
       const rfrtres = await fetch(
@@ -67,7 +69,13 @@ export async function verifyGithubTokenOrGetNewTokenFromRefreshToken(
         },
       });
 
-      const data = await retry.json();
+      const data = (await retry.json()) as GithubUser;
+
+      req.auth = {
+        username: data.login,
+        avatar: data.avatar_url,
+        id: data.id,
+      };
 
       (res as any).cookies.set("token", newtoken.access_token, {
         httpOnly: true,
@@ -81,6 +89,11 @@ export async function verifyGithubTokenOrGetNewTokenFromRefreshToken(
       //   res.status(200).json({ message: data });
       next();
     } else {
+      req.auth = {
+        username: user.login,
+        avatar: user.avatar_url,
+        id: user.id,
+      };
       //   res.status(200).json({ message: user });
       next();
     }

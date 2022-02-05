@@ -1,5 +1,5 @@
 import express from "express";
-import { githubOauthFlow } from "./controller";
+import { githubOauthFlow, userVerified } from "./controller";
 import {
   rateLimiter,
   verifyGithubTokenOrGetNewTokenFromRefreshToken,
@@ -11,7 +11,8 @@ router.post("/api/auth", rateLimiter(), githubOauthFlow);
 router.get(
   "/api/auth",
   rateLimiter.config(10, 5 * 60 * 1000)(),
-  verifyGithubTokenOrGetNewTokenFromRefreshToken
+  verifyGithubTokenOrGetNewTokenFromRefreshToken,
+  userVerified
 );
 
 export default router;

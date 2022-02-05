@@ -42,7 +42,7 @@ export interface BlogSlug {
 }
 
 export interface CommentSchema {
-  _id?: ObjectId;
+  _id?: ObjectId | string;
   blogId: string | ObjectId;
   createdAt: number;
   author: string;
@@ -72,4 +72,21 @@ export type UserSubmittedCommentSchema = Omit<
   | "hadIllegalHtml"
   | "lastUpdated"
   | "deletedAt"
+>;
+
+export interface Auth {
+  username: string;
+  id: number;
+  avatar: string;
+}
+
+export interface GithubUser {
+  login: string;
+  id: number;
+  avatar_url: string;
+}
+
+export type PatchComment = Pick<
+  CommentSchema,
+  "body" | "html" | "hasMarkdown" | "hadIllegalHtml" | "lastUpdated"
 >;

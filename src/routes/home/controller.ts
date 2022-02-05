@@ -1,5 +1,5 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 
-export default (req: any, res: Response) => {
-  res.send("Hello World!");
+export default (req: Request, res: Response) => {
+  res.send("Your ip is " + req.ip);
 };

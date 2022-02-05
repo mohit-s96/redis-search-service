@@ -15,3 +15,4 @@ app.listen(port, () => {
 });
 
 export type ExpressApp = typeof app;
+export {};

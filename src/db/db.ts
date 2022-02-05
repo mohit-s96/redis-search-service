@@ -1,5 +1,5 @@
 import { MongoClient, ObjectId } from "mongodb";
-import { BlogSlug, CommentSchema } from "../types";
+import { BlogSlug, CommentSchema, PatchComment } from "../types";
 
 type mongoCallback<T> = (client: MongoClient) => Promise<T>;
 
@@ -56,7 +56,7 @@ export function setComment(data: CommentSchema) {
         .db()
         .collection(process.env.COMMENT_COLLECTION as string);
 
-      return cursors.insertOne(data);
+      return cursors.insertOne(data as any);
     } catch (e) {
       console.error(e);
       return Promise.reject(
@@ -90,7 +90,7 @@ export function fetchComments(idString: string) {
   });
 }
 
-export function deleteComment(_id: ObjectId) {
+export function deleteComment(_id: ObjectId | string) {
   return dbConnect(async (client) => {
     try {
       await client.connect();
@@ -118,10 +118,7 @@ export function deleteComment(_id: ObjectId) {
   });
 }
 
-export function updateComment(
-  _id: ObjectId,
-  data: Pick<CommentSchema, "body" | "html" | "hasMarkdown">
-) {
+export function updateComment(_id: ObjectId, data: PatchComment) {
   return dbConnect(async (client) => {
     try {
       await client.connect();
@@ -135,6 +132,8 @@ export function updateComment(
             hasMarkdown: data.hasMarkdown,
             body: data.body,
             html: data.html,
+            hadIllegalHtml: data.hadIllegalHtml,
+            lastUpdated: data.lastUpdated,
           },
         }
       );
