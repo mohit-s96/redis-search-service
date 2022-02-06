@@ -8,6 +8,7 @@ import express from "express";
 
 const corsOptions = {
   origin: process.env.ALLOWED_ORIGINS.split("__AND__"),
+  credentials: true,
 };
 
 export default async function (app: ExpressApp) {

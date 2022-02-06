@@ -56,7 +56,8 @@ export function setComment(data: CommentSchema) {
         .db()
         .collection(process.env.COMMENT_COLLECTION as string);
 
-      return cursors.insertOne(data as any);
+      const doc = await cursors.insertOne(data as any);
+      return doc;
     } catch (e) {
       console.error(e);
       return Promise.reject(
@@ -91,12 +92,13 @@ export function fetchComments(idString: string) {
 }
 
 export function deleteComment(_id: ObjectId | string) {
+  _id = new ObjectId(_id);
   return dbConnect(async (client) => {
     try {
       await client.connect();
       const cursors = client
         .db()
-        .collection(process.env.BLOG_COMMENTS as string);
+        .collection(process.env.COMMENT_COLLECTION as string);
       await cursors.updateOne(
         { _id },
         {
@@ -118,13 +120,14 @@ export function deleteComment(_id: ObjectId | string) {
   });
 }
 
-export function updateComment(_id: ObjectId, data: PatchComment) {
+export function updateComment(_id: string | ObjectId, data: PatchComment) {
+  _id = new ObjectId(_id);
   return dbConnect(async (client) => {
     try {
       await client.connect();
       const cursors = client
         .db()
-        .collection(process.env.BLOG_COMMENTS as string);
+        .collection(process.env.COMMENT_COLLECTION as string);
       await cursors.updateOne(
         { _id },
         {
@@ -140,9 +143,7 @@ export function updateComment(_id: ObjectId, data: PatchComment) {
       return "success";
     } catch (e) {
       console.error(e);
-      return Promise.reject(
-        "Something went wrong. Error => " + JSON.stringify(e)
-      );
+      throw "Something went wrong. Error => " + e;
     } finally {
       await client.close();
     }

@@ -1,5 +1,6 @@
 // import { client } from "..";
 
+import { parse } from "path/posix";
 import { client } from "../initializers/01-redis";
 import { CommentSchema, PatchComment } from "../types";
 
@@ -30,12 +31,21 @@ export async function deleteFromCache(
   commentId: string
 ): Promise<number> {
   const comments = await client.sMembers(key);
+  let deleted = "";
   const commentsFiltered = comments
-    .map((comment) => JSON.parse(comment) as CommentSchema)
-    .filter((comment) => comment._id !== commentId)
-    .map((x) => JSON.stringify(x));
+    .map((comment) => {
+      const parsed = JSON.parse(comment) as CommentSchema;
+      if (parsed._id === commentId) {
+        deleted = comment;
+      } else {
+        return comment;
+      }
+    })
+    .filter((x) => x);
 
-  return client.sAdd(key, commentsFiltered);
+  await client.sAdd(key, commentsFiltered);
+  const code = await client.sRem(key, deleted);
+  return code;
 }
 
 export async function setCache<T>(
@@ -54,10 +64,11 @@ export async function updateCache(
   data: PatchComment
 ): Promise<void> {
   const oldComments = await client.sMembers(key);
-
+  let deleted = "";
   const newComments = oldComments.map((comment) => {
     let parsed = JSON.parse(comment) as CommentSchema;
     if (parsed._id === id) {
+      deleted = comment;
       parsed.body = data.body;
       parsed.hadIllegalHtml = data.hadIllegalHtml;
       (parsed.hasMarkdown = data.hasMarkdown),
@@ -70,4 +81,42 @@ export async function updateCache(
   });
 
   await client.sAdd(key, newComments);
+  await client.sRem(key, deleted);
+}
+
+export async function verifyIfUserHasCommentedOnABlog(
+  userid: number,
+  blogId: string
+) {
+  const data = await client.sMembers(blogId);
+  const hasCommented = data.some((comment) => {
+    if (comment.length < 10) {
+      return false;
+    } else {
+      const comnt = JSON.parse(comment) as CommentSchema;
+      if (comnt.authorGhId === userid) return true;
+      return false;
+    }
+  });
+
+  return hasCommented;
+}
+
+export async function verifyIfCommentOnABlogExists(
+  commentid: string,
+  blogId: string
+) {
+  const data = await client.sMembers(blogId);
+  const commentPresent = data.some((comment) => {
+    if (comment.length < 15) {
+      return false;
+    } else {
+      const comnt = JSON.parse(comment) as CommentSchema;
+      if (comnt._id === commentid && !comnt.isDeleted && comnt.isVisible)
+        return true;
+      return false;
+    }
+  });
+
+  return commentPresent;
 }

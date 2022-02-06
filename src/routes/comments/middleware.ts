@@ -8,10 +8,8 @@ export async function verifyValidBlog(
   res: Response,
   next: NextFunction
 ) {
-  const blogId =
-    req.method === "PATCH" || req.method === "patch"
-      ? req.body
-      : req.params.blogid;
+  const { blogId } =
+    req.method === "PATCH" || req.method === "patch" ? req.body : req.params;
 
   if (!blogId) {
     res.status(400).json({ error: "invalid blogId" });
@@ -27,6 +25,19 @@ export async function verifyValidBlog(
     return;
   }
 
+  const blogHash = await client.get(blogId);
+
+  if (!blogHash) {
+    res.status(400).json({ error: "invalid blogId" });
+    return;
+  }
+
+  if (req.method === "patch" || req.method === "PATCH") {
+    req.body.blogId = blogHash;
+  } else {
+    req.params.blogId = blogHash;
+  }
+
   next();
 }
 
@@ -35,9 +46,13 @@ export async function verifyValidComment(
   res: Response,
   next: NextFunction
 ) {
-  const { blogid: blogId, commentid } = req.params;
+  let { blogId, _id, commentId } =
+    req.method === "PATCH" || req.method === "patch" ? req.body : req.params;
 
-  if (!commentid) {
+  if (!commentId) {
+    commentId = _id;
+  }
+  if (!commentId) {
     res.status(400).json({ error: "invalid comment" });
     return;
   }
@@ -48,22 +63,29 @@ export async function verifyValidComment(
 
   //if we reach here we know that atleast the blogid is valid (because of verifyValidBlog middleware) and present in the cache, thus we don't check for null
 
-  const data = cached.map((cache) => JSON.parse(cache) as CommentSchema);
+  try {
+    const data = cached.map((cache) => JSON.parse(cache) as CommentSchema);
 
-  const validComment = data.some(
-    (comment) =>
-      comment._id === commentid &&
-      comment.isVisible &&
-      !comment.isDeleted &&
-      comment.authorGhId === req.auth.id
-  );
+    const validComment = data.some(
+      (comment) =>
+        comment._id === commentId &&
+        comment.isVisible &&
+        !comment.isDeleted &&
+        comment.authorGhId === req.auth.id
+    );
 
-  if (!validComment) {
+    if (!validComment) {
+      res.status(400).json({ error: "invalid request" });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    console.log(error);
+
     res.status(400).json({ error: "invalid request" });
     return;
   }
-
-  next();
 }
 
 export function isAdminSigned(req: Request, res: Response, next: NextFunction) {

@@ -4,13 +4,19 @@ import {
   PatchComment,
   UserSubmittedCommentSchema,
 } from "../types";
-import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 import * as marked from "marked";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function extractCommentSchema(obj: any): UserSubmittedCommentSchema {
+import {
+  verifyIfCommentOnABlogExists,
+  verifyIfUserHasCommentedOnABlog,
+} from "../db/redis-cache";
+
+export async function extractCommentSchema(
+  obj: any
+): Promise<UserSubmittedCommentSchema> {
   // TODO
   // make this configurable and add comment type for data provided by user in blogTypes.ts
-  if (!obj._id || typeof obj.blogId !== "string" || obj._id.length > 40) {
+  if (obj._id && (typeof obj.blogId !== "string" || obj._id.length > 40)) {
     throw "comment invalid";
   }
   if (!obj.blogId || typeof obj.blogId !== "string" || obj.blogId.length > 40) {
@@ -25,14 +31,18 @@ export function extractCommentSchema(obj: any): UserSubmittedCommentSchema {
   if (
     !obj.inReplyToComment ||
     typeof obj.inReplyToComment !== "string" ||
-    obj.inReplyToComment.length > 40
+    obj.inReplyToComment.length > 40 ||
+    (obj.inReplyToComment !== "default" &&
+      !(await verifyIfCommentOnABlogExists(obj.inReplyToComment, obj.blogId)))
   ) {
     throw "inReplyToComment invalid";
   }
   if (
     !obj.inReplyToUser ||
-    typeof obj.inReplyToComment !== "string" ||
-    obj.inReplyToComment.length > 40
+    typeof obj.inReplyToUser !== "string" ||
+    obj.inReplyToUser.length > 40 ||
+    (obj.inReplyToUser !== "default" &&
+      !(await verifyIfUserHasCommentedOnABlog(obj.inReplyToUser, obj.blogId)))
   ) {
     throw "inReplyToUser invalid";
   }
