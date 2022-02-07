@@ -19,13 +19,14 @@ export async function extractCommentSchema(
   if (obj._id && (typeof obj.blogId !== "string" || obj._id.length > 40)) {
     throw "comment invalid";
   }
+
   if (!obj.blogId || typeof obj.blogId !== "string" || obj.blogId.length > 40) {
     throw "blogId invalid";
   }
   if (!obj.body || typeof obj.body !== "string" || obj.body.length > 500) {
     throw "body invalid";
   }
-  if (!obj.hasMarkdown || typeof obj.hasMarkdown !== "boolean") {
+  if (obj.hasMarkdown === undefined || typeof obj.hasMarkdown !== "boolean") {
     throw "hasMarkdown invalid";
   }
   if (

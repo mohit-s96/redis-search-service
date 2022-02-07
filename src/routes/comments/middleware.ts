@@ -17,17 +17,16 @@ export async function verifyValidBlog(
   }
 
   const client = req.app.locals.client as RedisClientType;
+  const blogHash = await client.get(blogId);
 
-  const cached = await client.sMembers(blogId);
-
-  if (!cached || cached.length === 0) {
+  if (!blogHash) {
     res.status(400).json({ error: "invalid blogId" });
     return;
   }
 
-  const blogHash = await client.get(blogId);
+  const cached = await client.sMembers(blogHash);
 
-  if (!blogHash) {
+  if (!cached || cached.length === 0) {
     res.status(400).json({ error: "invalid blogId" });
     return;
   }

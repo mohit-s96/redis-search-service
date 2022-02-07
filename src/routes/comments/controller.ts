@@ -61,11 +61,13 @@ export async function postComment(req: Request, res: Response) {
   }
 
   try {
+    // change blogid from slug to hash set in the verifyblog middleware
+    schema.blogId = req.params.blogId;
     const fullCommentObject = await createCommentObject(schema, req.auth);
     const postedComment = await setComment(fullCommentObject);
     fullCommentObject._id = postedComment.insertedId.toString();
     await setCache(fullCommentObject.blogId as string, fullCommentObject);
-    res.status(201).json({ message: "success" });
+    res.status(201).json({ message: fullCommentObject });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "epic failure" });
