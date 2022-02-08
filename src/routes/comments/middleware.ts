@@ -24,10 +24,11 @@ export async function verifyValidBlog(
     return;
   }
 
-  const cached = await client.sMembers(blogHash);
+  const cached = await client.exists(blogHash);
 
-  if (!cached || cached.length === 0) {
-    res.status(400).json({ error: "invalid blogId" });
+  // redis returns 0 for non-existent keys
+  if (cached === 0 && req.method !== "POST" && req.method !== "PATCH") {
+    res.status(200).json({ message: [] });
     return;
   }
 

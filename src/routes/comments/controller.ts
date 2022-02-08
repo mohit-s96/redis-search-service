@@ -85,6 +85,8 @@ export async function updateUserComment(req: Request, res: Response) {
   }
 
   try {
+    // change blogid from slug to hash set in the verifyblog middleware
+    schema.blogId = req.body.blogId;
     const fullPatchObject = await createCommentPatchObject(schema);
 
     await updateComment(schema._id as any, fullPatchObject);
@@ -93,7 +95,7 @@ export async function updateUserComment(req: Request, res: Response) {
       schema._id as string,
       fullPatchObject
     );
-    res.status(201).json({ message: "success" });
+    res.status(201).json({ message: { ...fullPatchObject, _id: schema._id } });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "epic failure" });
@@ -119,7 +121,9 @@ export async function deleteCommentFromDb(req: Request, res: Response) {
     await deleteFromCache(blogId, commentId);
     res.status(201).json({ message: "success" });
   } catch (error) {
-    res.json(500).json({ error: "something went wrong on the server" });
+    console.log(error);
+
+    res.status(500).json({ error: "something went wrong on the server" });
   }
 }
 

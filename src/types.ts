@@ -58,6 +58,8 @@ export interface CommentSchema {
   hadIllegalHtml: boolean;
   lastUpdated: number;
   deletedAt: number;
+  inReplyToUsername: string;
+  authorAvatar: string;
 }
 
 export type UserSubmittedCommentSchema = Omit<
@@ -72,6 +74,7 @@ export type UserSubmittedCommentSchema = Omit<
   | "hadIllegalHtml"
   | "lastUpdated"
   | "deletedAt"
+  | "authorAvatar"
 >;
 
 export interface Auth {

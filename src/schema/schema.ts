@@ -48,6 +48,14 @@ export async function extractCommentSchema(
     throw "inReplyToUser invalid";
   }
 
+  if (
+    obj.inReplyToUsername === undefined ||
+    typeof obj.inReplyToUsername !== "string" ||
+    obj.inReplyToUsername.length > 40
+  ) {
+    throw "inReplyToUsername invalid";
+  }
+
   let userComment: UserSubmittedCommentSchema = {
     _id: obj._id,
     blogId: obj.blogId,
@@ -55,6 +63,7 @@ export async function extractCommentSchema(
     hasMarkdown: obj.hasMarkdown,
     inReplyToComment: obj.inReplyToComment,
     inReplyToUser: obj.inReplyToUser,
+    inReplyToUsername: obj.inReplyToUsername,
   };
 
   return userComment;
@@ -102,6 +111,9 @@ export async function createCommentObject(
     isVisible: true,
     hadIllegalHtml,
     html: clean,
+    inReplyToUsername:
+      schema.inReplyToUsername === "default" ? "" : schema.inReplyToUsername,
+    authorAvatar: user.avatar,
   };
 
   return comment;

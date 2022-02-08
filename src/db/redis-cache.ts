@@ -14,11 +14,12 @@ export async function getFromCache<T>(
 
   let parsedcache: T;
 
-  if (cached.length === 0 || force) {
+  if (!cached || force) {
     parsedcache = await fetcher();
-
-    await client.sAdd(key, parsedcache as unknown as string[]);
-    await client.expire(key, expiry);
+    if ((parsedcache as any).length) {
+      await client.sAdd(key, parsedcache as unknown as string[]);
+      await client.expire(key, expiry);
+    }
   } else {
     parsedcache = cached as any as T;
   }
@@ -42,8 +43,8 @@ export async function deleteFromCache(
       }
     })
     .filter((x) => x);
-
-  await client.sAdd(key, commentsFiltered);
+  // passing empty array to sadd throws "ERR wrong number of argumnets for 'sadd' command error"
+  if (commentsFiltered.length) await client.sAdd(key, commentsFiltered);
   const code = await client.sRem(key, deleted);
   return code;
 }
@@ -79,8 +80,9 @@ export async function updateCache(
       return comment;
     }
   });
-
-  await client.sAdd(key, newComments);
+  if (newComments.length) {
+    await client.sAdd(key, newComments);
+  }
   await client.sRem(key, deleted);
 }
 
