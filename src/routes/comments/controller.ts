@@ -17,7 +17,7 @@ import {
   createCommentPatchObject,
   extractCommentSchema,
 } from "../../schema/schema";
-import { CommentSchema, UserSubmittedCommentSchema } from "../../types";
+import { UserSubmittedCommentSchema } from "../../types";
 
 function createBlogCommentFetcher(blogId: string) {
   return async () => {

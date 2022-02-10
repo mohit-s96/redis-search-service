@@ -1,13 +1,12 @@
 // import { client } from "..";
 
-import { parse } from "path/posix";
 import { client } from "../initializers/01-redis";
 import { CommentSchema, PatchComment } from "../types";
 
 export async function getFromCache<T>(
   key: string,
   fetcher: () => Promise<T>,
-  force: boolean = false,
+  force = false,
   expiry: number = 3600 * 24 * 5
 ): Promise<T> {
   const cached = await client.sMembers(key);
@@ -49,7 +48,7 @@ export async function deleteFromCache(
   return code;
 }
 
-export async function setCache<T>(
+export async function setCache(
   key: string,
   data: any,
   expiry: number = 3600 * 24 * 5
