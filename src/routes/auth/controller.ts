@@ -1,3 +1,4 @@
+import Cookies from "cookies";
 import { Request, Response } from "express";
 import fetch from "node-fetch";
 import { Auth, GithubUser } from "../../types";
@@ -45,7 +46,7 @@ export async function githubOauthFlow(req: Request, res: Response) {
       httpOnly: true,
     });
 
-    (res as any).cookies.set("rfrt", user.refresh_token, {
+    ((res as any).cookies as Cookies).set("rfrt", user.refresh_token, {
       httpOnly: true,
       maxAge: user.refresh_token_expires_in * 1000,
     });
