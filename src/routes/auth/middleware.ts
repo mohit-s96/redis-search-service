@@ -52,7 +52,7 @@ export async function verifyGithubTokenOrGetNewTokenFromRefreshToken(
 
     if (user.message === "Bad credentials") {
       const rfrtres = await fetch(
-        `https://github.com/login/oauth/access_token?client_id=Iv1.b7f0e9e6521133a2&client_secret=${process.env.GH_CLIENT_SECRET}&refresh_token=${rfrt}&grant_type=refresh_token`,
+        `https://github.com/login/oauth/access_token?client_id=${process.env.GH_CLIENT_ID}&client_secret=${process.env.GH_CLIENT_SECRET}&refresh_token=${rfrt}&grant_type=refresh_token`,
         {
           method: "POST",
           headers: {

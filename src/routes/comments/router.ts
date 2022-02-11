@@ -7,6 +7,7 @@ import {
   addUriIdHash,
   deleteCommentCacheForBlog,
   deleteCommentFromDb,
+  getCommentCount,
   getComments,
   postComment,
   updateUserComment,
@@ -27,6 +28,15 @@ router.get(
   verifyValidBlog,
   getComments
 );
+
+//comment count
+router.get(
+  "/api/comment/:blogId/count",
+  rateLimiter.config(50, 5 * 60 * MULTIPLIER)(),
+  verifyValidBlog,
+  getCommentCount
+);
+
 // admin only route to clear comment cache when a blog is archived. this is called from submitblog component in the cms
 router.delete(
   "/api/comment/:blogId",

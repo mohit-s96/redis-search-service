@@ -12,7 +12,7 @@ export async function githubOauthFlow(req: Request, res: Response) {
     }
 
     const data = await fetch(
-      `https://github.com/login/oauth/access_token?client_id=Iv1.b7f0e9e6521133a2&client_secret=${process.env.GH_CLIENT_SECRET}&code=${code}`,
+      `https://github.com/login/oauth/access_token?client_id=${process.env.GH_CLIENT_ID}&client_secret=${process.env.GH_CLIENT_SECRET}&code=${code}`,
       {
         method: "POST",
         headers: {

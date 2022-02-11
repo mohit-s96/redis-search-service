@@ -140,3 +140,13 @@ export async function addUriIdHash(req: Request, res: Response) {
 
   res.status(201).json({ message: "success" });
 }
+
+export async function getCommentCount(req: Request, res: Response) {
+  const { blogId } = req.params;
+
+  const client = req.app.locals.client as RedisClientType;
+
+  const data = await client.sMembers(blogId);
+
+  res.status(200).json({ message: data.length });
+}
