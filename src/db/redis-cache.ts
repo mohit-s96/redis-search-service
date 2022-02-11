@@ -89,7 +89,11 @@ export async function verifyIfUserHasCommentedOnABlog(
   userid: number,
   blogId: string
 ) {
-  const data = await client.sMembers(blogId);
+  let key = blogId;
+  if (blogId.length < 23) {
+    key = await client.get(blogId);
+  }
+  const data = await client.sMembers(key);
   const hasCommented = data.some((comment) => {
     if (comment.length < 10) {
       return false;
@@ -107,7 +111,11 @@ export async function verifyIfCommentOnABlogExists(
   commentid: string,
   blogId: string
 ) {
-  const data = await client.sMembers(blogId);
+  let key = blogId;
+  if (blogId.length < 23) {
+    key = await client.get(blogId);
+  }
+  const data = await client.sMembers(key);
   const commentPresent = data.some((comment) => {
     if (comment.length < 15) {
       return false;
