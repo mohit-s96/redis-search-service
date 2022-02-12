@@ -38,7 +38,7 @@ export async function getComments(req: Request, res: Response) {
   const fetcher = createBlogCommentFetcher(blogId);
 
   try {
-    const data = await getFromCache(blogId, fetcher, false, 3600 * 24 * 180);
+    const data = await getFromCache(blogId, fetcher, false);
     let resp = data.map((x) => JSON.parse(x));
 
     res.status(200).json({ message: resp });

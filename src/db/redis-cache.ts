@@ -6,8 +6,7 @@ import { CommentSchema, PatchComment } from "../types";
 export async function getFromCache<T>(
   key: string,
   fetcher: () => Promise<T>,
-  force = false,
-  expiry: number = 3600 * 24 * 5
+  force = false
 ): Promise<T> {
   const cached = await client.sMembers(key);
 
@@ -17,7 +16,6 @@ export async function getFromCache<T>(
     parsedcache = await fetcher();
     if ((parsedcache as any).length) {
       await client.sAdd(key, parsedcache as unknown as string[]);
-      await client.expire(key, expiry);
     }
   } else {
     parsedcache = cached as any as T;
@@ -48,14 +46,8 @@ export async function deleteFromCache(
   return code;
 }
 
-export async function setCache(
-  key: string,
-  data: any,
-  expiry: number = 3600 * 24 * 5
-): Promise<void> {
+export async function setCache(key: string, data: any): Promise<void> {
   await client.sAdd(key, JSON.stringify(data));
-
-  await client.expire(key, expiry);
 }
 
 export async function updateCache(
