@@ -40,7 +40,8 @@ export async function extractCommentSchema(
   }
   if (
     !obj.inReplyToUser ||
-    typeof obj.inReplyToUser !== "number" ||
+    (typeof obj.inReplyToUser !== "number" &&
+      typeof obj.inReplyToUser !== "string") ||
     obj.inReplyToUser.length > 40 ||
     (obj.inReplyToUser !== "default" &&
       !(await verifyIfUserHasCommentedOnABlog(obj.inReplyToUser, obj.blogId)))
