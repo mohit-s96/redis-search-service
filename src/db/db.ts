@@ -79,7 +79,7 @@ export function fetchComments(idString: string) {
         .db()
         .collection(process.env.COMMENT_COLLECTION as string)
         .find({ blogId }, {});
-      const blogs = (await cursors.toArray()) as CommentSchema[];
+      const blogs = ((await cursors.toArray()) as any) as CommentSchema[];
       return blogs;
     } catch (e) {
       console.error(e);

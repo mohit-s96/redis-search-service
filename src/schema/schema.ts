@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   Auth,
   CommentSchema,
@@ -6,69 +7,6 @@ import {
 } from "../types";
 import DOMPurify from "isomorphic-dompurify";
 import * as marked from "marked";
-import {
-  verifyIfCommentOnABlogExists,
-  verifyIfUserHasCommentedOnABlog,
-} from "../db/redis-cache";
-
-export async function extractCommentSchema(
-  obj: any
-): Promise<UserSubmittedCommentSchema> {
-  // TODO
-  // make this configurable and add comment type for data provided by user in blogTypes.ts
-  if (obj._id && (typeof obj.blogId !== "string" || obj._id.length > 40)) {
-    throw "comment invalid";
-  }
-
-  if (!obj.blogId || typeof obj.blogId !== "string" || obj.blogId.length > 40) {
-    throw "blogId invalid";
-  }
-  if (!obj.body || typeof obj.body !== "string" || obj.body.length > 500) {
-    throw "body invalid";
-  }
-  if (obj.hasMarkdown === undefined || typeof obj.hasMarkdown !== "boolean") {
-    throw "hasMarkdown invalid";
-  }
-  if (
-    !obj.inReplyToComment ||
-    typeof obj.inReplyToComment !== "string" ||
-    obj.inReplyToComment.length > 40 ||
-    (obj.inReplyToComment !== "default" &&
-      !(await verifyIfCommentOnABlogExists(obj.inReplyToComment, obj.blogId)))
-  ) {
-    throw "inReplyToComment invalid";
-  }
-  if (
-    !obj.inReplyToUser ||
-    (typeof obj.inReplyToUser !== "number" &&
-      typeof obj.inReplyToUser !== "string") ||
-    obj.inReplyToUser.length > 40 ||
-    (obj.inReplyToUser !== "default" &&
-      !(await verifyIfUserHasCommentedOnABlog(obj.inReplyToUser, obj.blogId)))
-  ) {
-    throw "inReplyToUser invalid";
-  }
-
-  if (
-    obj.inReplyToUsername === undefined ||
-    typeof obj.inReplyToUsername !== "string" ||
-    obj.inReplyToUsername.length > 40
-  ) {
-    throw "inReplyToUsername invalid";
-  }
-
-  let userComment: UserSubmittedCommentSchema = {
-    _id: obj._id,
-    blogId: obj.blogId,
-    body: obj.body,
-    hasMarkdown: obj.hasMarkdown,
-    inReplyToComment: obj.inReplyToComment,
-    inReplyToUser: obj.inReplyToUser,
-    inReplyToUsername: obj.inReplyToUsername,
-  };
-
-  return userComment;
-}
 
 async function convertMarkDownToHtml(md: string): Promise<string> {
   return new Promise((res, rej) => {
@@ -83,7 +21,7 @@ async function convertMarkDownToHtml(md: string): Promise<string> {
 }
 
 export async function createCommentObject(
-  schema: UserSubmittedCommentSchema,
+  schema: Partial<UserSubmittedCommentSchema>,
   user: Auth
 ): Promise<CommentSchema> {
   const html = await convertMarkDownToHtml(schema.body);
@@ -101,6 +39,7 @@ export async function createCommentObject(
     authorGhId: user.id,
     inReplyToComment:
       schema.inReplyToComment === "default" ? "" : schema.inReplyToComment,
+    //@ts-ignore
     inReplyToUser:
       schema.inReplyToUser === "default" ? "" : schema.inReplyToUser,
     isAdmin: user.username === "msx47" && user.id === 17087942,
@@ -121,7 +60,7 @@ export async function createCommentObject(
 }
 
 export async function createCommentPatchObject(
-  schema: UserSubmittedCommentSchema
+  schema: Partial<UserSubmittedCommentSchema>
 ): Promise<PatchComment> {
   const html = await convertMarkDownToHtml(schema.body);
   let clean = DOMPurify.sanitize(html, {

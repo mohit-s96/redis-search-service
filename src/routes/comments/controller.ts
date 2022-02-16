@@ -11,13 +11,15 @@ import {
   getFromCache,
   setCache,
   updateCache,
+  verifyIfCommentOnABlogExists,
+  verifyIfUserHasCommentedOnABlog,
 } from "../../db/redis-cache";
 import {
   createCommentObject,
   createCommentPatchObject,
-  extractCommentSchema,
 } from "../../schema/schema";
 import { UserSubmittedCommentSchema } from "../../types";
+import { userSubmittedCommentSchemaSchema } from "../../vaidZodSchema";
 
 function createBlogCommentFetcher(blogId: string) {
   return async () => {
@@ -50,10 +52,21 @@ export async function getComments(req: Request, res: Response) {
 }
 
 export async function postComment(req: Request, res: Response) {
-  let schema: UserSubmittedCommentSchema;
+  let schema: Partial<UserSubmittedCommentSchema>;
 
   try {
-    schema = await extractCommentSchema(req.body);
+    // schema = await extractCommentSchema(req.body);
+    schema = userSubmittedCommentSchemaSchema.parse(req.body);
+    if (schema.inReplyToComment !== "default")
+      await verifyIfCommentOnABlogExists(
+        schema.inReplyToComment,
+        schema.blogId
+      );
+    if (schema.inReplyToUser !== "default")
+      await verifyIfUserHasCommentedOnABlog(
+        schema.inReplyToUser,
+        schema.blogId
+      );
   } catch (error) {
     console.log(error);
     res.status(401).json({ error: "you posted cringe: " + error });
@@ -75,9 +88,19 @@ export async function postComment(req: Request, res: Response) {
 }
 
 export async function updateUserComment(req: Request, res: Response) {
-  let schema: UserSubmittedCommentSchema;
+  let schema: Partial<UserSubmittedCommentSchema>;
   try {
-    schema = await extractCommentSchema(req.body);
+    schema = userSubmittedCommentSchemaSchema.parse(req.body);
+    if (schema.inReplyToComment !== "default")
+      await verifyIfCommentOnABlogExists(
+        schema.inReplyToComment,
+        schema.blogId
+      );
+    if (schema.inReplyToUser !== "default")
+      await verifyIfUserHasCommentedOnABlog(
+        schema.inReplyToUser,
+        schema.blogId
+      );
   } catch (error) {
     console.log(error);
     res.status(401).json({ error: "you posted cringe: " + error });

@@ -37,7 +37,7 @@ export async function verifyGithubTokenOrGetNewTokenFromRefreshToken(
     const token = cookies.get("token");
     const rfrt = cookies.get("rfrt");
 
-    if (!token || !rfrt) {
+    if (!rfrt) {
       throw "unauthorized";
     }
 

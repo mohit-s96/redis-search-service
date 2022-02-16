@@ -42,17 +42,17 @@ export interface BlogSlug {
 }
 
 export interface CommentSchema {
-  _id?: ObjectId | string;
-  blogId: string | ObjectId;
+  _id?: string;
+  blogId: string;
   createdAt: number;
   author: string;
   authorGhId: number;
-  inReplyToUser: string;
+  inReplyToUser: number | "default";
   isAdmin: boolean;
   hasMarkdown: boolean;
   isVisible: boolean;
   isDeleted: boolean;
-  inReplyToComment: ObjectId | string;
+  inReplyToComment: string;
   body: string;
   html: string;
   hadIllegalHtml: boolean;
