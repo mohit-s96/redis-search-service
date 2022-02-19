@@ -18,7 +18,7 @@ import {
   createCommentObject,
   createCommentPatchObject,
 } from "../../schema/schema";
-import { UserSubmittedCommentSchema } from "../../types";
+import { BlogSlug, UserSubmittedCommentSchema } from "../../types";
 import { userSubmittedCommentSchemaSchema } from "../../vaidZodSchema";
 
 function createBlogCommentFetcher(blogId: string) {
@@ -129,8 +129,34 @@ export async function deleteCommentCacheForBlog(req: Request, res: Response) {
   const client = req.app.locals.client as RedisClientType;
 
   const blogId = req.params.blogId;
+  const slug = req.params.slug;
 
   await client.del(blogId);
+
+  await client.sAdd("archived", blogId);
+  let searches = await client.hGetAll("search");
+
+  if (searches) {
+    const removeSearch: string[] = [];
+    for (const key in searches) {
+      if (Object.prototype.hasOwnProperty.call(searches, key)) {
+        const element = searches[key];
+        const arr = JSON.parse(element) as Partial<BlogSlug>[];
+        arr.forEach((data) => {
+          if (data.uri === slug) {
+            removeSearch.push(key);
+          }
+        });
+      }
+    }
+
+    const promises: Promise<any>[] = [];
+    removeSearch.forEach((s) => {
+      promises.push(client.hDel("search", s));
+    });
+
+    await Promise.all(promises);
+  }
 
   res.status(200).json({ message: "success" });
 }

@@ -10,17 +10,23 @@ export default async (req: Request, res: Response) => {
   try {
     const key = req.query.query as string;
 
+    if (!key || key.length > 40) {
+      res.status(200).json({ message: [] });
+      return;
+    }
+
     const client: RedisClientType = req.app.locals.client;
 
-    const cached = await client.get(transformRedisKey(key));
+    const cached = await client.hGet("search", transformRedisKey(key));
 
-    if (cached === null) {
-      const response = await fetchSearchQuery(key);
-      await client.setEx(
+    const response = await fetchSearchQuery(key);
+    if (response.length) {
+      await client.hSet(
+        "search",
         transformRedisKey(key),
-        345600, // 4 days
         JSON.stringify(response)
       );
+      await client.expire(transformRedisKey(key), 345600 /*4 days*/);
       res.status(200).json(response);
     } else {
       res.status(200).json(JSON.parse(cached));

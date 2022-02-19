@@ -27,15 +27,23 @@ export async function verifyValidBlog(
   const cached = await client.exists(blogHash);
 
   // redis returns 0 for non-existent keys
-  if (cached === 0 && req.method !== "POST" && req.method !== "PATCH") {
+  if (
+    cached === 0 &&
+    req.method !== "POST" &&
+    req.method !== "PATCH" &&
+    !req.app.locals.isAdmin
+  ) {
     res.status(200).json({ message: [] });
     return;
   }
 
+  // set actual mongo id for blogId(instead of the uri slug) for use in further handlers
+  //also add the uri slug for any future use
   if (req.method === "patch" || req.method === "PATCH") {
     req.body.blogId = blogHash;
   } else {
     req.params.blogId = blogHash;
+    req.params.slug = blogId;
   }
 
   next();
@@ -92,6 +100,8 @@ export function isAdminSigned(req: Request, res: Response, next: NextFunction) {
   const cookies = req.cookies as Cookies;
 
   const token = cookies.get("token");
+
+  req.app.locals.isAdmin = true;
 
   if (!token || !(token === process.env.ADMIN_AUTH_KEY)) {
     res.status(401).json({ error: "unauthorized" });
