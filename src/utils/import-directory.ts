@@ -22,29 +22,29 @@ function walk(dir: string) {
   return results;
 }
 
-export default function (path: string, options: Record<string, any>) {
+interface ImportDirOptions {
+  visit?: (defaultExport: unknown) => Promise<unknown> | unknown;
+  include?: RegExp;
+}
+// simple replacement for require-directory module if you just want to initialize route/filter specific routes. Works with top level await.
+export default async function (path: string, options: ImportDirOptions) {
   const fileNames = walk(path);
 
   let promises: Promise<any>[] = [];
 
   fileNames.forEach((file) => {
     if (file.endsWith(".js")) {
-      if (options.include && options.include.test(file)) {
-        const module = import(file);
-        promises.push(module);
-      } else if (!options.include) {
+      if ((options.include && options.include.test(file)) || !options.include) {
         const module = import(file);
         promises.push(module);
       }
     }
   });
-  return new Promise<void>((res) => {
-    Promise.all(promises).then((modules) => {
-      modules.forEach((m) => {
-        if (options && typeof options.visit === "function")
-          options.visit(m.default);
-      });
-      res();
-    });
-  });
+
+  const modules = await Promise.all(promises);
+
+  for (const m of modules) {
+    if (options && typeof options.visit === "function")
+      await options.visit(m.default);
+  }
 }
