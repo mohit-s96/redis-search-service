@@ -19,6 +19,11 @@ export default async (req: Request, res: Response) => {
 
     const cached = await client.hGet("search", transformRedisKey(key));
 
+    if (cached) {
+      res.status(200).send(cached);
+      return;
+    }
+
     const response = await fetchSearchQuery(key);
     if (response.length) {
       await client.hSet(
@@ -29,7 +34,7 @@ export default async (req: Request, res: Response) => {
       await client.expire(transformRedisKey(key), 345600 /*4 days*/);
       res.status(200).json(response);
     } else {
-      res.status(200).json(JSON.parse(cached));
+      res.status(200).json([]);
     }
   } catch (err) {
     let message = "something went wrong";

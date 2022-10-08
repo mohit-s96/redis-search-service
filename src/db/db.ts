@@ -50,8 +50,6 @@ export function fetchSearchQuery(key: string) {
 export function setComment(data: CommentSchema) {
   return dbConnect(async (client) => {
     try {
-      // data.blogId = new ObjectId(data.blogId);
-      // data.inReplyToComment = new ObjectId(data.inReplyToComment);
       await client.connect();
       const cursors = client
         .db()
@@ -71,14 +69,13 @@ export function setComment(data: CommentSchema) {
 }
 
 export function fetchComments(idString: string) {
-  const blogId = new ObjectId(idString);
   return dbConnect<CommentSchema[]>(async (client) => {
     try {
       await client.connect();
       const cursors = client
         .db()
         .collection(process.env.COMMENT_COLLECTION as string)
-        .find({ blogId }, {});
+        .find({ blogId: idString });
       const blogs = ((await cursors.toArray()) as any) as CommentSchema[];
       return blogs;
     } catch (e) {

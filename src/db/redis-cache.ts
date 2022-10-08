@@ -1,5 +1,3 @@
-// import { client } from "..";
-
 import { client } from "../initializers/01-redis";
 import { CommentSchema, PatchComment } from "../types";
 
@@ -12,13 +10,13 @@ export async function getFromCache<T>(
 
   let parsedcache: T;
 
-  if (!cached || force) {
+  if (!cached || force || cached?.length === 0) {
     parsedcache = await fetcher();
     if ((parsedcache as any).length) {
-      await client.sAdd(key, parsedcache as unknown as string[]);
+      await client.sAdd(key, (parsedcache as unknown) as string[]);
     }
   } else {
-    parsedcache = cached as any as T;
+    parsedcache = (cached as any) as T;
   }
 
   return parsedcache;
