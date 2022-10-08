@@ -19,12 +19,11 @@ import {
   createCommentPatchObject,
 } from "../../schema/schema";
 import { BlogSlug, UserSubmittedCommentSchema } from "../../types";
-import { userSubmittedCommentSchemaSchema } from "../../vaidZodSchema";
+import { userSubmittedCommentSchemaSchema } from "../../validZodSchema";
 
 function createBlogCommentFetcher(blogId: string) {
   return async () => {
     const comments = await fetchComments(blogId);
-
     return comments
       .filter((comment) => comment.isVisible && !comment.isDeleted)
       .map((comment) => {
