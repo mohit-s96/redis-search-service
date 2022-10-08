@@ -31,6 +31,7 @@ export async function verifyValidBlog(
     cached === 0 &&
     req.method !== "POST" &&
     req.method !== "PATCH" &&
+    process.env.NODE_ENV === "production" &&
     !req.app.locals.isAdmin
   ) {
     res.status(200).json({ message: [] });
