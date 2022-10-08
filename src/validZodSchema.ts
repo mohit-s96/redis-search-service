@@ -13,8 +13,11 @@ export const slugTypeSchema = z.union([
   z.literal("nm"),
 ]);
 
+const trimString = (str: unknown) =>
+  typeof str === "string" ? str.trim() : str;
+
 export const commentSchemaSchema = z.object({
-  _id: z.string().optional(),
+  _id: z.string().max(40).optional(),
   blogId: z.string().max(40),
   createdAt: z.number(),
   author: z.string().max(40),
@@ -25,7 +28,7 @@ export const commentSchemaSchema = z.object({
   isVisible: z.boolean(),
   isDeleted: z.boolean(),
   inReplyToComment: z.string().max(40),
-  body: z.string().max(500),
+  body: z.preprocess(trimString, z.string().max(500).min(1)),
   html: z.string(),
   hadIllegalHtml: z.boolean(),
   lastUpdated: z.number(),
