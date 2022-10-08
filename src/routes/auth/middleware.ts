@@ -35,11 +35,6 @@ export async function verifyGithubTokenOrGetNewTokenFromRefreshToken(
     const cookies = req.cookies as Cookies;
 
     const token = cookies.get("token");
-    //const rfrt = cookies.get("rfrt");
-
-    // if (!rfrt) {
-    //   throw "unauthorized";
-    // }
 
     const userdata = await fetch(`https://api.github.com/user`, {
       headers: {
@@ -52,50 +47,12 @@ export async function verifyGithubTokenOrGetNewTokenFromRefreshToken(
 
     if (user.message === "Bad credentials") {
       throw new Error("unauthorized");
-      // const rfrtres = await fetch(
-      //   `https://github.com/login/oauth/access_token?client_id=${process.env.GH_CLIENT_ID}&client_secret=${process.env.GH_CLIENT_SECRET}&refresh_token=${rfrt}&grant_type=refresh_token`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       Accept: "application/json",
-      //     },
-      //   }
-      // );
-
-      // const newtoken = (await rfrtres.json()) as any;
-
-      // const retry = await fetch(`https://api.github.com/user`, {
-      //   headers: {
-      //     Authorization: `token ${newtoken.access_token}`,
-      //   },
-      // });
-
-      // const data = (await retry.json()) as GithubUser;
-
-      // req.auth = {
-      //   username: data.login,
-      //   avatar: data.avatar_url,
-      //   id: data.id,
-      // };
-
-      // (res as any).cookies.set("token", newtoken.access_token, {
-      //   httpOnly: true,
-      //   maxAge: 15552000 * 1000,
-      // });
-
-      // // (res as any).cookies.set("rfrt", newtoken.refresh_token, {
-      // //   httpOnly: true,
-      // // });
-
-      // //   res.status(200).json({ message: data });
-      // next();
     } else {
       req.auth = {
         username: user.login,
         avatar: user.avatar_url,
         id: user.id,
       };
-      //   res.status(200).json({ message: user });
       next();
     }
   } catch (error) {
