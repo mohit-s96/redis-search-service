@@ -18,7 +18,7 @@ const trimString = (str: unknown) =>
 
 export const commentSchemaSchema = z.object({
   _id: z.string().max(40).optional(),
-  blogId: z.string().max(40),
+  blogId: z.string().max(100),
   createdAt: z.number(),
   author: z.string().max(40),
   authorGhId: z.number(),
