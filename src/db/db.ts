@@ -17,9 +17,12 @@ export function fetchSearchQuery(key: string) {
         .aggregate([
           {
             $search: {
-              autocomplete: {
-                path: "blogData",
+              index: "default",
+              text: {
                 query: key,
+                path: {
+                  wildcard: "*",
+                },
               },
             },
           },
