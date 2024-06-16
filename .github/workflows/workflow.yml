@@ -18,5 +18,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Add SSH key to the agent
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+
       - name: SSH into EC2
-        run: ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'cd ~/apps/redis-search-service && git pull && ./scripts/intall_deps.sh && ./start_server.sh'
+        run: ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'cd ~/apps/redis-search-service && git pull && ./scripts/install_deps.sh && ./start_server.sh'
