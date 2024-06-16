@@ -18,5 +18,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: List SSH Directory Contents
+        run: ls -la ~/.ssh
+
+      - name: Test SSH Connection
+        run: ssh -vvv -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'echo "SSH connection successful"'
+
       - name: SSH into Server
-        run: ssh -vvv -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'cd ~/apps/redis-search-service && git pull && ./scripts/install_deps.sh && ./start_server.sh'
+        run: ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'cd ~/apps/redis-search-service && git pull && ./scripts/install_deps.sh && ./start_server.sh'
