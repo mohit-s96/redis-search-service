@@ -13,10 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: SSH into Server
-        run: ssh -vvv -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'cd ~/apps/redis-search-service && git pull && ./scripts/install_deps.sh && ./start_server.sh'
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd ~/apps/redis-search-service
+            git pull
+            ./scripts/install_deps.sh
+            ./scripts/start_server.sh
