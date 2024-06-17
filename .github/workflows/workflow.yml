@@ -11,20 +11,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: List SSH Directory Contents
-        run: ls -la ~/.ssh
-
-      - name: Test SSH Connection
-        run: ssh -vvv -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'echo "SSH connection successful"'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: SSH into Server
-        run: ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'cd ~/apps/redis-search-service && git pull && ./scripts/install_deps.sh && ./start_server.sh'
+        run: ssh -vvv -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} 'cd ~/apps/redis-search-service && git pull && ./scripts/install_deps.sh && ./start_server.sh'
