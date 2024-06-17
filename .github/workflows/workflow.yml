@@ -17,4 +17,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
-          script: echo 'successsss'
+          script: |
+            cd ~/apps/redis-search-service
+            git pull
+            ./scripts/install_deps.sh
+            ./scripts/start_server.sh
